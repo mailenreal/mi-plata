@@ -359,6 +359,9 @@ function vInicio(){
       <div class="inner">${ahoInner}</div></details>
    ${locomproHTML}
    <h2>¿Dónde está la plata?</h2>${sd.auditada?`<div class="card" id="irPlata" style="cursor:pointer"><div class="tot" style="margin:0"><div><span class="tiny muted">Pesos</span><b>${ars(sd.totales.ARS)}</b></div><div><span class="tiny muted">Dólares</span><b>${usd(sd.totales.USD)}</b></div><div><span class="tiny muted">USDT</span><b>${usd(sd.totales.USDT).replace('US$','')}</b></div></div><div class="small muted" style="margin-top:8px">Ver cada cuenta, tarjetas e inversiones ›</div></div>`:`<div class="card">${plata}</div>`}
+   ${I.elian&&(I.elian.hay||I.elian.bandeja)?`<h2>Con Elian</h2><div class="card" id="irElian" style="cursor:pointer">
+      <div class="row between"><div><div class="small muted">${I.elian.balance>0?'Elian te debe':I.elian.balance<0?'Le debés a Elian':'Están a mano'}</div><div class="mid" style="font-size:24px">${ars(Math.abs(I.elian.balance))}</div></div><span class="chev">Ver ›</span></div>
+      ${I.elian.bandeja?`<div class="rec info" style="margin:10px 0 0"><div>Elian cargó <b>${I.elian.bandeja}</b> ${I.elian.bandeja===1?'cosa':'cosas'} nueva${I.elian.bandeja===1?'':'s'}${I.elian.bandejaParte?': tu parte es <b>'+ars(I.elian.bandejaParte)+'</b>':''}. Tocá para pasarlo a tu planilla.</div></div>`:''}</div>`:''}
    <h2>Compromisos</h2>
    <div class="grid2">
      <div class="card"><div class="small muted">Suscripciones</div><div class="mid">${ars(subsARS)} + ${usd(subsUSD)}</div><div class="tiny muted">por mes · ${ars(subsARS*12)} + ${usd(subsUSD*12)} al año</div></div>
@@ -371,6 +374,7 @@ function vInicio(){
   const ip=$('#irPrueba');if(ip)ip.onclick=()=>setPrueba(true);
   const cb=$('#cerrar');if(cb)cb.onclick=()=>vAuditoria(false);
   const ip2=$('#irPlata');if(ip2)ip2.onclick=()=>go('plata');
+  const ie=$('#irElian');if(ie)ie.onclick=()=>vElian();
   $$('[data-vp]').forEach(b=>b.onclick=()=>{const v=vAlert[b.dataset.vp];
     if(v.tipo==='tarjeta')openCarga({tipo:'pagoTarjeta',banco:v.nombre==='MP'?'MP':v.nombre,monto:v.monto?Math.round(v.monto):''});
     else openCarga({tipo:'fijo',que:v.nombre,cat:v.cat,monto:''});});
@@ -422,10 +426,19 @@ function renderCarga(){
     <label class="f">Con quién <span class="muted">(si aplica)</span></label>${chips('conQuien',pers,f.conQuien)}
     <label class="f">Por qué <span class="muted">(si aplica)</span></label><input id="porQue" value="${esc(f.porQue)}" placeholder="Ej: cumple de Karu, obra Repetto">
     <div class="preview"><span class="tiny muted">Se guarda como</span><br><b id="pv">${esc(descPreview())||'—'}</b></div>`;
+  const compTxt=(mm,parteM,pago)=>mm?`A tu planilla va <b>${ars(mm*parteM)}</b> (tu parte). ${pago==='Mai'?`Elian te debe <b>${ars(mm*(1-parteM))}</b>.`:`Le debés a Elian <b>${ars(mm*parteM)}</b>.`}`:'Poné el monto total y te muestro cómo queda.';
+  S.compTxt=compTxt;
+  const parteM=f.compParte==='otro'?Math.min(100,Math.max(0,num(f.compPct)))/100:0.5, mm=num(f.monto);
+  const compHTML=`<label class="f">¿Compartido con Elian?</label>${chips('comp',[['no','No'],['si','Sí']],f.comp?'si':'no')}
+    ${f.comp?`<label class="f">¿Quién pagó?</label>${chips('compPago',[['Mai','Yo'],['Elian','Elian']],f.compPago||'Mai')}
+      <label class="f">¿Cómo se divide?</label>${chips('compParte',[['mitad','Mitad'],['otro','Otro']],f.compParte||'mitad')}
+      ${f.compParte==='otro'?`<label class="f">Mi parte (%)</label><input id="compPct" inputmode="decimal" value="${esc(f.compPct||'')}" placeholder="Ej: 60">`:''}
+      <div class="preview" id="cpv">${compTxt(mm,parteM,f.compPago||'Mai')}</div>`:''}`;
+  const cuentaComp=mon=>f.comp&&(f.compPago||'Mai')==='Elian'?'':cuentaSel(mon);
   let body='';
   if(f.tipo==='variable') body=regla+`<label class="f">Categoría</label>${chips('cat',L.catVariable,f.cat)}
-      <label class="f">¿Era necesario?</label>${chips('nec',['Necesario','No necesario'],f.nec)}${cuentaSel(['ARS'])}<div class="grid2"><div>${fecha}</div><div>${mes}</div></div>`;
-  else if(f.tipo==='fijo') body=regla+`<label class="f">Categoría</label>${chips('cat',L.catFijo,f.cat)}${cuentaSel(['ARS'])}<div class="grid2"><div>${fecha}</div><div>${mes}</div></div>`;
+      <label class="f">¿Era necesario?</label>${chips('nec',['Necesario','No necesario'],f.nec)}${compHTML}${cuentaComp(['ARS'])}<div class="grid2"><div>${fecha}</div><div>${mes}</div></div>`;
+  else if(f.tipo==='fijo') body=regla+`<label class="f">Categoría</label>${chips('cat',L.catFijo,f.cat)}${compHTML}${cuentaComp(['ARS'])}<div class="grid2"><div>${fecha}</div><div>${mes}</div></div>`;
   else if(f.tipo==='ingreso') body=`<label class="f">De qué</label><input id="desc" value="${esc(f.desc||'')}" placeholder="Ej: SUELDO CIFARELLI, Fee obra Repetto">
       <label class="f">Tipo</label>${chips('cat',[['SUELDO','Sueldo'],['LIVO','LIVO'],['OTROS','Otro']],f.cat||'SUELDO')}
       <label class="f">Moneda</label>${chips('moneda',L.monedas,f.moneda)}
@@ -458,7 +471,7 @@ function renderCarga(){
   bindCarga();
 }
 function readCarga(){
-  const f=S.f;['que','donde','porQue','fecha','cot','usd','desc','montoDestino'].forEach(id=>{const e=$('#'+id);if(e)f[id]=e.value});
+  const f=S.f;['que','donde','porQue','fecha','cot','usd','desc','montoDestino','compPct'].forEach(id=>{const e=$('#'+id);if(e)f[id]=e.value});
   const m=$('#monto');if(m)f.monto=m.value;const ms=$('#mes');if(ms)f.mes=Number(ms.value);
   const c=$('#cuotas');if(c)f.cuotas=Number(c.value);const mi=$('#mesInicio');if(mi)f.mesInicio=Number(mi.value);
   if(f.que&&!f.cat&&S.frec.queCat[f.que])f.cat=S.frec.queCat[f.que];
@@ -469,6 +482,8 @@ function bindCarga(){
     if(k==='tipo'){if(f.tipo!==v){const keep={monto:f.monto,fecha:f.fecha,mes:f.mes};S.f=nuevoF(Object.assign(keep,{tipo:v}));
       if(v==='ingreso')S.f.cat='SUELDO'; if(v==='usd')S.f.cuenta=cuentasDe(['USD','USDT'])[0]; if(v==='cambio')S.f.cuentaDestino=cuentasDe(['USD'])[0];}renderCarga();return}
     if(k==='estimado'){f.estimado=v==='si';renderCarga();return}
+    if(k==='comp'){f.comp=v==='si';if(f.comp&&!f.compPago)f.compPago='Mai';renderCarga();return}
+    if(k==='compPago'||k==='compParte'){f[k]=v;renderCarga();return}
     if(k==='moneda'&&f.tipo==='ingreso'){f.moneda=v;f.cuenta=cuentasDe(v==='ARS'?['ARS']:[v])[0]||'';renderCarga();return}
     f[k]=(f[k]===v&&['cat','conQuien','nec'].includes(k))?'':v;renderCarga()});
   $$('[data-fq]').forEach(el=>el.onclick=()=>{readCarga();const x=S.frec.top.filter(x=>x.tipo==='variable'||x.tipo==='fijo')[el.dataset.fq];
@@ -476,6 +491,7 @@ function bindCarga(){
   const r=$('#rapida');if(r)r.onchange=()=>{readCarga();quickParse(r.value);renderCarga()};
   ['que','donde','porQue'].forEach(id=>{const e=$('#'+id);if(e)e.oninput=()=>{readCarga();$('#pv').textContent=descPreview()||'—'}});
   const q=$('#que');if(q)q.onchange=()=>{readCarga();if(S.frec.queCat[S.f.que]){S.f.cat=S.frec.queCat[S.f.que];renderCarga()}};
+  if(S.f.comp){['monto','compPct'].forEach(id=>{const e=$('#'+id);if(e)e.oninput=()=>{readCarga();const f=S.f,pm=f.compParte==='otro'?Math.min(100,Math.max(0,num(f.compPct)))/100:0.5,c=$('#cpv');if(c)c.innerHTML=S.compTxt(num(f.monto),pm,f.compPago||'Mai')}})}
   if(S.f.tipo==='cambio'){['usd','monto'].forEach(id=>{const e=$('#'+id);if(e)e.onchange=()=>{readCarga();renderCarga()}})}
   $('#save').onclick=()=>guardar(false);
 }
@@ -499,6 +515,9 @@ async function guardar(forzar){
     const body=Object.assign({},f,{action:'cargar',monto,usd:num(f.usd),montoDestino:num(f.montoDestino),cot:num(f.cot),
       desc:f.tipo==='ingreso'?f.desc:(f.tipo==='pagoTarjeta'?'Pago tarjeta '+f.banco:(f.tipo==='transferencia'?'Transferencia a '+f.cuentaDestino:'')),
       que:f.tipo==='pagoTarjeta'?'Pago tarjeta':f.que});
+    if(f.comp&&['variable','fijo'].includes(f.tipo)){if(f.compParte==='otro'&&!(num(f.compPct)>=0&&num(f.compPct)<=100&&String(f.compPct).trim()))throw new Error('Poné qué % te toca a vos');
+      body.comp={pago:f.compPago||'Mai',parteMai:f.compParte==='otro'?num(f.compPct)/100:0.5};if(body.comp.pago==='Elian')body.cuenta='';}
+    delete body.compPago;delete body.compParte;delete body.compPct;
     const d=await call(body);
     if(f.cuenta)LS.set('mp_cuenta',f.cuenta);
     S.ini=d.inicio;S.mes=null;S.anual=null;S.M=null;closeModal();
@@ -622,7 +641,8 @@ async function vMetas(){
    ${act.map(g=>{const e=EV[g.id],tot=g.monto+g.respaldo,p=tot?Math.min(100,g.asignado/tot*100):0;
      return `<div class="card" style="margin-top:12px"><div class="row between"><b>${esc(g.nombre)}</b><span class="pill ${e.v==='realista'?'ok':e.v==='optimista'?'warn':e.v==='n'?'n':'bad'}">${e.t}</span></div>
      <div class="bar"><i class="${e.v==='realista'?'ok':e.v==='optimista'?'warn':e.v==='n'?'':'bad'}" style="width:${p}%"></i></div>
-     <div class="kv"><span>Objetivo</span><b>${usd(g.monto)}${g.respaldo?' + '+usd(g.respaldo)+' respaldo':''}</b></div>
+     ${g.conElian?`<div class="small muted" style="margin:6px 0 2px">🤝 Con Elian · total ${usd(g.total)} · Elian puso ${usd(g.elian)}</div>`:''}
+     <div class="kv"><span>${g.conElian?'Tu parte':'Objetivo'}</span><b>${usd(g.monto)}${g.respaldo?' + '+usd(g.respaldo)+' respaldo':''}</b></div>
      <div class="kv"><span>Asignado</span><b>${usd(g.asignado)}</b></div>
      <div class="kv"><span>Para</span><b>${g.fecha?new Date(g.fecha).toLocaleDateString('es-AR',{month:'long',year:'numeric'}):'sin fecha'}</b></div>
      ${e.v==='n'?'':`<div class="kv"><span>Ahorrar por mes</span><b>${usd(e.req)}</b></div>`}
@@ -634,11 +654,17 @@ async function vMetas(){
   $$('[data-ok]').forEach(b=>b.onclick=async()=>{S.M=await call({action:'borrarMeta',id:b.dataset.ok,estado:'cumplida'});toast('¡Bien ahí! 🎉');vMetas()});
 }
 function wizard(g){
-  const M=S.M;let st=Object.assign({nombre:'',fecha:'',monto:'',respaldo:'',asignado:0,prioridad:'MEDIA',moneda:'USD'},g?{...g,fecha:g.fecha?g.fecha.slice(0,7):''}:{});
+  const M=S.M;let st=Object.assign({nombre:'',fecha:'',monto:'',respaldo:'',asignado:0,prioridad:'MEDIA',moneda:'USD',con:'no',parte:'mitad',pct:''},
+    g?{...g,fecha:g.fecha?g.fecha.slice(0,7):'',con:g.conElian?'si':'no',monto:g.conElian?g.total:g.monto,respaldo:g.conElian&&g.parteMai?Math.round(g.respaldo/g.parteMai):g.respaldo,
+       parte:g.conElian&&g.parteMai!==0.5?'otro':'mitad',pct:g.conElian?Math.round(g.parteMai*100):''}:{});
+  const parteMai=()=>st.con==='si'?(st.parte==='otro'?Math.min(100,Math.max(0,num(st.pct)))/100:0.5):1;
   const render=()=>{modal(`<div class="row between"><h1 style="margin:0">${g?'Editar':'Nuevo'} objetivo</h1><button class="lnk" id="x">Cerrar</button></div>
     <label class="f">1 · ¿Qué querés?</label><input id="wn" value="${esc(st.nombre)}" placeholder="Ej: Auto, Viaje a Japón">
     <label class="f">2 · ¿Para cuándo?</label><input id="wf" type="month" value="${esc(st.fecha)}">
-    <label class="f">3 · ¿Cuánto querés gastar?</label><div class="row"><input id="wm" inputmode="decimal" value="${esc(st.monto)}" placeholder="0">${chips('moneda',['USD','ARS'],st.moneda)}</div>
+    <label class="f">¿Es con Elian?</label>${chips('con',[['no','Solo yo'],['si','Con Elian']],st.con)}
+    ${st.con==='si'?`<label class="f">¿Cuánto ponés vos?</label>${chips('parte',[['mitad','Mitad'],['otro','Otro %']],st.parte)}${st.parte==='otro'?`<input id="wp" inputmode="decimal" value="${esc(st.pct)}" placeholder="Mi % (ej: 60)">`:''}
+      <p class="small muted">Poné el costo TOTAL del viaje o la meta. Tus cuentas usan solo tu parte, y Elian ve el total y lo que pone cada uno.</p>`:''}
+    <label class="f">3 · ¿Cuánto ${st.con==='si'?'cuesta en total':'querés gastar'}?</label><div class="row"><input id="wm" inputmode="decimal" value="${esc(st.monto)}" placeholder="0">${chips('moneda',['USD','ARS'],st.moneda)}</div>
     <label class="f">4 · ¿Con cuánto querés quedarte de respaldo? <span class="muted">(aparte de la emergencia)</span></label><input id="wr" inputmode="decimal" value="${esc(st.respaldo)}" placeholder="0">
     <label class="f">5 · ¿Usás algo de lo que ya tenés ahorrado? <span class="muted">(libre: ${usd(M.disponible+Number(g?g.asignado:0))})</span></label><input id="wa" inputmode="decimal" value="${esc(st.asignado||'')}" placeholder="0 USD">
     <label class="f">Prioridad</label>${chips('prioridad',M?S.listas.prioridades:['ALTA','MEDIA','BAJA'],st.prioridad)}
@@ -646,22 +672,68 @@ function wizard(g){
     $('#x').onclick=closeModal;
     $$('#sheet [data-k]').forEach(el=>el.onclick=()=>{read();st[el.dataset.k]=el.dataset.v;render()});
     $('#wev').onclick=()=>{read();res()};};
-  const read=()=>{st.nombre=$('#wn').value;st.fecha=$('#wf').value;st.monto=$('#wm').value;st.respaldo=$('#wr').value;st.asignado=num($('#wa').value)};
+  const read=()=>{st.nombre=$('#wn').value;st.fecha=$('#wf').value;st.monto=$('#wm').value;st.respaldo=$('#wr').value;st.asignado=num($('#wa').value);const wp=$('#wp');if(wp)st.pct=wp.value};
   const toUSD=v=>st.moneda==='ARS'?num(v)/M.dolar:num(v);
   const res=()=>{
     if(!st.nombre||!num(st.monto))return toast('Completá qué es y cuánto');
     const libre=M.disponible+Number(g?g.asignado:0); if(st.asignado>libre){st.asignado=libre;$('#wa').value=Math.round(libre)}
-    const meta={monto:toUSD(st.monto),respaldo:toUSD(st.respaldo),asignado:st.asignado,fecha:st.fecha?st.fecha+'-01':''};
+    const pm=parteMai();const meta={monto:toUSD(st.monto)*pm,respaldo:toUSD(st.respaldo)*pm,asignado:st.asignado,fecha:st.fecha?st.fecha+'-01':''};
     const PR={ALTA:0,MEDIA:1,BAJA:2};let capRest=M.capacidad;
     M.metas.filter(m=>m.estado==='activa'&&m.fecha&&(!g||m.id!==g.id)&&PR[m.prioridad]<=PR[st.prioridad]).forEach(m=>{const e0=evaluar(m,M,capRest);capRest-=e0.req});
     const e=evaluar(meta,M,capRest);
     if(capRest<M.capacidad&&e.v!=='n')e.txt+=` <span class="muted">(Ya descontando lo que piden tus otras metas igual o más prioritarias: te quedan ${usd(Math.max(0,capRest))}/mes.)</span>`;
     $('#wres').innerHTML=`<div class="verd ${e.v==='n'?'optimista':e.v}"><h3>${e.v==='sonador'?'☁️ ':e.v==='optimista'?'💪 ':'✅ '}${e.t}</h3><div>${e.txt}</div>
-      <div class="kv" style="margin-top:8px"><span>Total</span><b>${usd(meta.monto+meta.respaldo)}</b></div><div class="kv"><span>Te falta</span><b>${usd(e.falta)}</b></div><div class="kv"><span>Meses</span><b>${e.meses}</b></div></div>
+      ${st.con==='si'?`<div class="kv" style="margin-top:8px"><span>Total con Elian</span><b>${usd(toUSD(st.monto)+toUSD(st.respaldo))}</b></div>`:''}
+      <div class="kv" style="margin-top:8px"><span>${st.con==='si'?'Tu parte':'Total'}</span><b>${usd(meta.monto+meta.respaldo)}</b></div><div class="kv"><span>Te falta</span><b>${usd(e.falta)}</b></div><div class="kv"><span>Meses</span><b>${e.meses}</b></div></div>
       <button class="btn" id="wsave">Guardar objetivo</button>`;
-    $('#wsave').onclick=async()=>{$('#wsave').disabled=true;S.M=await call({action:'guardarMeta',id:g?g.id:'',nombre:st.nombre,monto:meta.monto,respaldo:meta.respaldo,fecha:meta.fecha,prioridad:st.prioridad,asignado:st.asignado,veredicto:e.t});closeModal();toast('Objetivo guardado');vMetas()};
+    $('#wsave').onclick=async()=>{$('#wsave').disabled=true;S.M=await call({action:'guardarMeta',id:g?g.id:'',nombre:st.nombre,monto:meta.monto,respaldo:meta.respaldo,fecha:meta.fecha,prioridad:st.prioridad,asignado:st.asignado,veredicto:e.t,
+      conElian:st.con==='si',parteMai:pm,montoTotal:st.con==='si'?toUSD(st.monto):'',respaldoTotal:st.con==='si'?toUSD(st.respaldo):''});closeModal();toast('Objetivo guardado');vMetas()};
   };
   render();
+}
+
+/* ========= CON ELIAN (nuestro Splitwise) ========= */
+const ELIAN_URL='https://mailenreal.github.io/mi-plata/elian.html';
+async function vElian(){
+  S.view='elian';
+  $('#app').innerHTML=back('Con Elian')+'<div class="card muted">Cargando…</div>';
+  let C,P;try{[C,P]=await Promise.all([call({action:'compInicio'}),call({action:'pinElian'})])}catch(e){return toast(e.message)}
+  const b=C.balance, fd=x=>x?new Date(x).toLocaleDateString('es-AR',{day:'numeric',month:'numeric'}):'';
+  const linea=x=>x.cat==='SALDO'?`<div class="it"><span>${esc(x.que)}<span class="tiny muted"> · ${fd(x.fecha)}</span></span><b>${ars(x.total)}</b></div>`
+    :`<div class="it"><span>${esc(x.que)}<span class="tiny muted"> · ${fd(x.fecha)} · pagó ${x.pago==='Mai'?'Mai':'Elian'} · tu parte ${ars(x.total*x.parteMai)}${x.cargo==='Elian'?' · lo cargó Elian':''}</span></span>
+      <span style="text-align:right"><b>${ars(x.total)}</b><br><button class="lnk tiny" data-cb="${x.id}">borrar</button></span></div>`;
+  const cuentasARS=cuentasDe(['ARS']);let cta=LS.get('mp_cuenta')&&cuentasARS.includes(LS.get('mp_cuenta'))?LS.get('mp_cuenta'):cuentasARS[0];
+  $('#app').innerHTML=back('Con Elian')+`
+   <div class="card"><div class="small muted">${b>0?'Elian te debe':b<0?'Le debés a Elian':'Están a mano'}</div><div class="big">${ars(Math.abs(b))}</div>
+     <div class="row" style="gap:6px;margin-top:6px"><button class="btn sm" id="cg">+ Gasto compartido</button><button class="btn sm sec" id="cp">Registrar un pago</button></div></div>
+   ${C.bandeja.length?`<h2>Lo que cargó Elian</h2><div class="card"><div class="list">${C.bandeja.map(linea).join('')}</div>
+     <label class="f">Si pagaste vos o te pagó, ¿qué cuenta se movió?</label>${chips('cta',cuentasARS,cta)}
+     <button class="btn" id="pasarB">Pasar a mi planilla</button><button class="lnk" id="ignB" style="margin-top:8px">No pasar (ya lo tenía cargado)</button>
+     <p class="tiny muted">A tu planilla va solo tu parte de cada gasto, como gasto variable.</p></div>`:''}
+   ${C.metas.length?`<h2>Metas juntos</h2>${C.metas.map(m=>{const falta=Math.max(0,m.total-m.mai-m.elian),p=m.total?Math.min(100,(m.mai+m.elian)/m.total*100):0;
+     return `<div class="card"><div class="row between"><b>${esc(m.nombre)}</b><span class="small muted">${m.fecha?new Date(m.fecha).toLocaleDateString('es-AR',{month:'short',year:'numeric'}):''}</span></div>
+      <div class="bar"><i class="ok" style="width:${p}%"></i></div>
+      <div class="kv"><span>Total</span><b>${usd(m.total)}</b></div><div class="kv"><span>Puse yo</span><b>${usd(m.mai)} <span class="tiny muted">de ${usd(m.total*m.parteMai)}</span></b></div>
+      <div class="kv"><span>Puso Elian</span><b>${usd(m.elian)} <span class="tiny muted">de ${usd(m.total*(1-m.parteMai))}</span></b></div><div class="kv"><span>Falta</span><b>${usd(falta)}</b></div>
+      <button class="btn sm sec" data-ap="${m.id}">Sumar mi aporte</button></div>`}).join('')}`:''}
+   <h2>Movimientos</h2><div class="card">${C.lista.length?`<div class="list">${C.lista.map(linea).join('')}</div>`:'<span class="small muted">Todavía no hay nada.</span>'}</div>
+   <h2>Página de Elian</h2><div class="card"><div class="small">Elian carga desde <b>${ELIAN_URL.replace('https://','')}</b> con su propio PIN. Solo ve lo compartido, nada más de tu plata.</div>
+     <label class="f">PIN de Elian (4 a 8 números)</label><div class="row"><input id="pinE" inputmode="numeric" placeholder="${P.tienePin?'Ya tiene PIN · poné uno nuevo para cambiarlo':'Elegí un PIN para él'}"><button class="btn sm" id="gPin" style="width:auto;margin:0">Guardar</button></div>
+     <a class="btn sec" href="https://wa.me/?text=${encodeURIComponent('Para cargar nuestros gastos compartidos: '+ELIAN_URL)}" target="_blank" rel="noopener">Mandarle el link por WhatsApp</a></div>`;
+  $('#cg').onclick=()=>openCarga({tipo:'variable',comp:true,compPago:'Mai',compParte:'mitad',conQuien:'Elian'});
+  $('#cp').onclick=()=>{let quien='Elian';const r=()=>{modal(`<div class="row between"><h1 style="margin:0">Pago entre ustedes</h1><button class="lnk" id="x">Cerrar</button></div>
+      <label class="f">¿Quién le pagó a quién?</label>${chips('q',[['Elian','Elian me pagó'],['Mai','Yo le pagué']],quien)}
+      <label class="f">Monto</label><input id="pm" class="monto" inputmode="decimal" placeholder="${b?Math.round(Math.abs(b)):0}">
+      <label class="f">¿Qué cuenta?</label>${chips('cta',cuentasARS,cta)}<button class="btn" id="gp">Guardar</button>`);
+      $('#x').onclick=closeModal;$$('#sheet [data-k]').forEach(el=>el.onclick=()=>{if(el.dataset.k==='q')quien=el.dataset.v;else cta=el.dataset.v;const v=$('#pm').value;r();$('#pm').value=v});
+      $('#gp').onclick=async()=>{const m=num($('#pm').value);if(!(m>0))return toast('Poné el monto');$('#gp').disabled=true;
+        try{await call({action:'compCargar',cat:'SALDO',total:m,pago:quien,cuenta:cta});closeModal();toast('Listo');vElian()}catch(e){toast(e.message);$('#gp').disabled=false}}};r()};
+  $$('#app [data-k="cta"]').forEach(el=>el.onclick=()=>{cta=el.dataset.v;$$('#app [data-k="cta"]').forEach(x=>x.classList.toggle('on',x.dataset.v===cta))});
+  const pb=$('#pasarB');if(pb)pb.onclick=async()=>{pb.disabled=true;try{await call({action:'compPasar',ids:C.bandeja.map(x=>x.id),cuenta:cta});toast('Pasado a tu planilla');S.ini=await call({action:'inicio',mes:S.mesActual});vElian()}catch(e){toast(e.message);pb.disabled=false}};
+  const ib=$('#ignB');if(ib)ib.onclick=async()=>{await call({action:'compPasar',ids:C.bandeja.map(x=>x.id),ignorar:true});vElian()};
+  $$('[data-cb]').forEach(el=>el.onclick=async()=>{if(!confirm('¿Borrar este movimiento compartido? (Si ya está en tu planilla, borralo también ahí)'))return;try{await call({action:'compBorrar',id:el.dataset.cb});vElian()}catch(e){toast(e.message)}});
+  $$('[data-ap]').forEach(el=>el.onclick=async()=>{const v=prompt('¿Cuántos USD sumás a esta meta?');if(!num(v))return;try{await call({action:'compAportar',id:el.dataset.ap,usd:num(v)});S.M=null;vElian()}catch(e){toast(e.message)}});
+  $('#gPin').onclick=async()=>{const v=$('#pinE').value.trim();try{await call({action:'guardarPinElian',pin:v});toast(v?'PIN de Elian guardado':'PIN borrado');$('#pinE').value=''}catch(e){toast(e.message)}};
 }
 
 /* ========= PLATA ========= */
@@ -670,7 +742,8 @@ async function vPlata(){
   let P;try{P=await call({action:'plata',mes:S.mesActual})}catch(e){return toast(e.message)}
   const sd=P.saldos;
   const mov=list=>(list||[]).map(x=>`<div class="it"><span>${esc(x.desc)}<span class="tiny muted">${x.fecha?' · '+new Date(x.fecha).toLocaleDateString('es-AR',{day:'numeric',month:'numeric'}):''}</span></span><b style="color:${x.monto>0?'var(--ok)':'inherit'}">${x.monto>0?'+':''}${ars(x.monto).replace('$','')}</b></div>`).join('')||'<div class="small muted">Sin movimientos desde la última vez que contaste</div>';
-  const cuentas=sd.cuentas.map(c=>`<details class="sub"><summary><span>${esc(c.nombre)} <span class="tiny muted">${c.moneda}</span></span><b>${money(c.saldo,c.moneda)}</b></summary><div class="list">${mov(P.movs[c.nombre])}</div></details>`).join('');
+  const cuentas=sd.cuentas.map(c=>`<details class="sub"><summary><span>${esc(c.nombre)} <span class="tiny muted">${c.moneda}</span>${c.ajeno?`<br><span class="tiny" style="color:var(--acctx)">+ ${money(c.ajeno,c.moneda)} de LIVO${c.ajenoNota?' · '+esc(c.ajenoNota):''} (no es tuya)</span>`:''}</span><b>${money(c.saldo,c.moneda)}</b></summary><div class="list">${mov(P.movs[c.nombre])}</div></details>`).join('');
+  const ajT=sd.ajeno||{ARS:0};
   const tj=P.tarjetas.map((t,i)=>`<details class="sub"><summary><span><b>${esc(t.banco)}</b> <span class="tiny muted">${t.debito?'débito automático':t.dia?'vence el '+t.dia:'sin fecha'}</span></span><b>${ars(t.aPagar)}</b></summary>
       <div class="small muted" style="margin-bottom:4px">A pagar en ${esc(P.mesNombre)} · el mes que viene ${ars(t.proximo)}</div>
       <div class="list">${t.compras.length?t.compras.map(c=>`<div class="it"><span>${esc(c.item)}<span class="tiny muted"> · cuota ${c.n} de ${c.de}${c.cat?' · '+esc(c.cat):''}</span></span><b>${ars(c.cuota)}</b></div>`).join(''):'<div class="small muted">Sin compras en cuotas este mes</div>'}</div>
@@ -684,7 +757,8 @@ async function vPlata(){
      ${sd.auditada?'':'<div class="small muted" style="margin-bottom:8px">Los saldos arrancan cuando cuentes tu plata (1/12).</div>'}
      <div class="tot" style="margin:0 0 10px"><div><span class="tiny muted">Pesos</span><b>${ars(sd.totales.ARS)}</b></div><div><span class="tiny muted">Dólares</span><b>${usd(sd.totales.USD)}</b></div><div><span class="tiny muted">USDT</span><b>${usd(sd.totales.USDT).replace('US$','')}</b></div></div>
      <div class="card" style="margin:0">${cuentas}</div>
-     <div class="row" style="gap:6px"><button class="btn sm" id="pasar">Pasar entre cuentas</button><button class="btn sm sec" id="contar">Contar mi plata</button></div>`)}
+     <div class="row" style="gap:6px"><button class="btn sm" id="pasar">Pasar entre cuentas</button><button class="btn sm sec" id="contar">Contar mi plata</button></div>
+     <div class="card" style="margin:10px 0 0"><div class="row between"><div><div class="small"><b>Plata de LIVO en tus cuentas</b></div><div class="tiny muted">${ajT.ARS?ars(ajT.ARS)+' de clientes: no cuenta como tuya':'Plata de clientes que pasa por tus cuentas'}</div></div><button class="btn sm sec" id="ajeno" style="width:auto;margin:0">${ajT.ARS?'Actualizar':'Agregar'}</button></div></div>`)}
    ${sec('tarj','💳','Tarjetas','Lo que tenés que pagar en '+esc(P.mesNombre),ars(totT),`<div class="card" style="margin:0">${tj}</div>`)}
    ${sec('dol','💵','Dólares · PREX y billeteras','Balance de la hoja BILLETERAS USD',usd(P.usd.balance),`
      <details class="card blq" style="margin:0"><summary><div class="row between small"><span>Últimos movimientos</span><span class="chev">Ver ▾</span></div></summary>
@@ -696,6 +770,15 @@ async function vPlata(){
        <div class="rec ${P.resultadoCripto>=0?'ok':'bad'}" style="margin:0 0 6px"><div>Pusiste <b>${usd(P.invertido)}</b> en cripto y hoy vale <b>${usd(P.valorCripto)}</b>: vas ${P.resultadoCripto>=0?'ganando':'perdiendo'} <b>${usd(Math.abs(P.resultadoCripto))}</b>${P.invertido?' ('+Math.round(P.resultadoCripto/P.invertido*100)+'%)':''}.</div></div>
        <div class="list">${cr}</div><div class="tiny muted" style="margin-top:6px">Precios en vivo de la hoja INVERTIDO.</div></div>`)}`;
   $('#pasar').onclick=()=>openCarga({tipo:'transferencia'});
+  $('#ajeno').onclick=()=>{const cs=sd.cuentas;
+    modal(`<div class="row between"><h1 style="margin:0">Plata de LIVO</h1><button class="lnk" id="x">Cerrar</button></div>
+      <p class="small muted">Poné cuánta plata de clientes hay hoy en cada cuenta. No es ingreso ni gasto tuyo: solo se separa de tu plata. Cuando pagás proveedores, actualizás el número y listo.</p>
+      ${cs.map((c,i)=>`<label class="f">${esc(c.nombre)} <span class="muted">${c.moneda}</span></label><div class="grid2"><input data-aj="${i}" inputmode="decimal" placeholder="0" value="${c.ajeno||''}"><input data-ajn="${i}" placeholder="Nota (ej: obra Pérez)" value="${esc(c.ajenoNota||'')}"></div>`).join('')}
+      <button class="btn" id="gAj">Guardar</button>`);
+    $('#x').onclick=closeModal;
+    $('#gAj').onclick=async()=>{$('#gAj').disabled=true;try{for(let i=0;i<cs.length;i++){const v=num($(`[data-aj="${i}"]`).value),n=$(`[data-ajn="${i}"]`).value.trim();
+      if(v!==(cs[i].ajeno||0)||n!==(cs[i].ajenoNota||''))await call({action:'guardarAjeno',cuenta:cs[i].nombre,monto:v,nota:n});}
+      closeModal();toast('Listo');S.ini=await call({action:'inicio',mes:S.mesActual});vPlata()}catch(e){toast(e.message);$('#gAj').disabled=false}}};
   $('#contar').onclick=()=>vAuditoria(!sd.auditada);
   $$('[data-pt]').forEach(b=>b.onclick=()=>{const t=P.tarjetas[b.dataset.pt];openCarga({tipo:'pagoTarjeta',banco:S.listas.bancosTarjeta.find(x=>x.toUpperCase()===t.banco.toUpperCase())||t.banco,monto:Math.round(t.aPagar)})});
   $$('[data-ct]').forEach(b=>b.onclick=()=>$('#cfg'+b.dataset.ct).classList.toggle('hide'));
@@ -721,10 +804,10 @@ async function vVenc(){
 
 /* ========= MÁS ========= */
 function vMas(){
-  const items=[['analisis','📊','Análisis del año'],['venc','📅','Vencimientos de gastos fijos'],['tarjetas','💳','Tarjetas y cuotas'],['usdw','💵','Billeteras USD'],['inv','📈','Inversiones'],['subs','🔁','Suscripciones'],['auds','🧮','Auditorías'],['ajustes','⚙️','Topes, cuentas y personas']];
+  const items=[['elian','🤝','Gastos y metas con Elian'],['analisis','📊','Análisis del año'],['venc','📅','Vencimientos de gastos fijos'],['tarjetas','💳','Tarjetas y cuotas'],['usdw','💵','Billeteras USD'],['inv','📈','Inversiones'],['subs','🔁','Suscripciones'],['auds','🧮','Auditorías'],['ajustes','⚙️','Topes, cuentas y personas']];
   $('#app').innerHTML=`<h1>Más</h1><div class="card list menu">${items.map(i=>`<div class="it" data-m="${i[0]}"><span>${i[1]}  ${i[2]}</span><span class="muted">›</span></div>`).join('')}</div>
     <button class="btn sec" id="salir">Cerrar sesión</button>`;
-  $$('[data-m]').forEach(e=>e.onclick=()=>({analisis:vAnalisis,venc:vVenc,tarjetas:vTarjetas,usdw:vUSD,inv:vInv,subs:vSubs,auds:vAuds,ajustes:vAjustes})[e.dataset.m]());
+  $$('[data-m]').forEach(e=>e.onclick=()=>({elian:vElian,analisis:vAnalisis,venc:vVenc,tarjetas:vTarjetas,usdw:vUSD,inv:vInv,subs:vSubs,auds:vAuds,ajustes:vAjustes})[e.dataset.m]());
   $('#salir').onclick=()=>{LS.set('mp_sesion','');CFG.sesion='';limpiarCache();vSetup()};
 }
 async function ensureEx(){if(!S.ex)S.ex=await call({action:'extras'});return S.ex}
