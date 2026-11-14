@@ -34,6 +34,7 @@ input.monto{font-family:var(--head);font-weight:500;font-size:44px;letter-spacin
 .bal{background:var(--ink);color:var(--oninv)}.bal .muted{color:#B9AE9F}
 .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:var(--ink);color:var(--oninv);padding:12px 18px;border-radius:999px;font-weight:500;z-index:9}
 .hide{display:none!important}.preview{background:var(--chip);border-radius:16px;padding:10px 12px;font-size:14px;margin-top:12px}
+.desg{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}.desg summary{cursor:pointer;font-weight:600;font-size:14px;color:#B5452E;list-style:none;padding:4px 0}.desg summary::-webkit-details-marker{display:none}.desg summary::after{content:' ▾'}.desg[open] summary::after{content:' ▴'}.dg-r{margin-top:10px}.dg-h{display:flex;justify-content:space-between;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding:4px 0}.dg-i{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}.dg-i>span:last-child{text-align:right;white-space:nowrap}.dg-t{margin-top:10px;background:rgba(23,21,19,.04);border-radius:16px;padding:6px 12px}
 </style></head><body><main id="app"></main><div id="toast" class="toast hide"></div>
 <script>
 const API=location.hostname==='localhost'?'/exec':'https://script.google.com/macros/s/AKfycbyovSNcRv-IU1XPDOZdomY9p29oseEWumf8xpyekAmBYpZ4zSoBOcZtDCH9i9eJlyky/exec';
@@ -63,6 +64,15 @@ async function cargar(){
   try{D=await call({action:'compInicio'});LS.set('me_cache',JSON.stringify(D));render()}catch(e){if(SES)toast(e.message)}
 }
 const fd=x=>x?new Date(x).toLocaleDateString('es-AR',{day:'numeric',month:'numeric'}):'';
+function desgHTML(d,parte){if(!d||!d.items||!d.items.length)return'';
+  const g={};d.items.forEach(x=>(g[x.rubro]=g[x.rubro]||[]).push(x));
+  const f=d.fecha?new Date(d.fecha).toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'}):'';
+  return `<details class="desg"><summary>Ver qué incluye y a qué precio</summary>
+   ${Object.keys(g).map(r=>{const st=g[r].reduce((a,x)=>a+x.ars,0);return `<div class="dg-r"><div class="dg-h"><span>${esc(r)}</span><span>${usd(st/d.dolar)}</span></div>
+     ${g[r].map(x=>`<div class="dg-i"><span>${esc(x.item)}${x.nota?`<span class="tiny muted"> · ${esc(x.nota)}</span>`:''}${x.fuente?`<br><span class="tiny muted">${esc(x.fuente)}</span>`:''}</span><span><b>${usd(x.usd)}</b><br><span class="tiny muted">${ars(x.ars)}</span></span></div>`).join('')}</div>`}).join('')}
+   <div class="dg-t"><div class="kv"><span>Suma</span><b>${usd(d.usd)}</b></div><div class="kv"><span>Margen por si sube (${Math.round(d.margen*100)}%)</span><b>${usd(d.margenUsd)}</b></div>
+   <div class="kv"><span><b>Total de la meta</b></span><b>${usd(d.conMargen)}</b></div>${parte!==undefined?`<div class="kv"><span>${parte.lbl}</span><b>${usd(d.conMargen*parte.p)}</b></div>`:''}</div>
+   <div class="tiny muted" style="margin-top:6px">Precios en pesos pasados a dólar blue ${ars(d.dolar)}${f?' · actualizado el '+f:''}. Se actualiza solo una vez por mes.</div></details>`}
 function render(){
   const b=D.balance;// + = Elian le debe a Mai
   $('#app').innerHTML=`<div class="brand"><span class="logo">${PIG}</span><span>Mai &amp; Elian</span></div><h1>Nuestras cuentas</h1>
@@ -74,7 +84,7 @@ function render(){
      <div class="bar"><i style="width:${p}%"></i></div><div class="kv"><span>Total</span><b>${usd(m.total)}</b></div>
      <div class="kv"><span>Puse yo</span><b>${usd(m.elian)} <span class="tiny muted">de ${usd(m.total*(1-m.parteMai))}</span></b></div>
      <div class="kv"><span>Puso Mai</span><b>${usd(m.mai)} <span class="tiny muted">de ${usd(m.total*m.parteMai)}</span></b></div>
-     <div class="kv"><span>Falta</span><b>${usd(falta)}</b></div><button class="btn sec" data-ap="${m.id}" style="margin-top:8px">Sumar mi aporte</button></div>`}).join('')}`:''}
+     <div class="kv"><span>Falta</span><b>${usd(falta)}</b></div>${desgHTML(m.desglose,{lbl:'Tu parte',p:1-m.parteMai})}<button class="btn sec" data-ap="${m.id}" style="margin-top:8px">Sumar mi aporte</button></div>`}).join('')}`:''}
    <h2>Movimientos</h2><div class="card">${D.lista.length?`<div class="list">${D.lista.map(x=>`<div class="it"><span>${esc(x.que)}<span class="tiny muted"> · ${fd(x.fecha)}${x.cat==='SALDO'?'':' · pagó '+(x.pago==='Mai'?'Mai':'yo')+' · mi parte '+ars(x.total*(1-x.parteMai))}</span></span>
      <span style="text-align:right"><b>${ars(x.total)}</b>${x.cargo==='Elian'&&x.enPlanilla!=='sí'?`<br><button class="lnk tiny" data-del="${x.id}">borrar</button>`:''}</span></div>`).join('')}</div>`:'<span class="small muted">Todavía no hay nada.</span>'}</div>
    <button class="lnk" id="salir" style="margin-top:20px">Cerrar sesión</button>`;
