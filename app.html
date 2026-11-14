@@ -223,6 +223,9 @@ input,select,textarea{font-size:16px!important}input.monto{font-size:44px!import
 const PIG='<svg class="pig" aria-hidden="true" viewBox="0 0 64 64" fill="none" stroke="#171513" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"> <path d="M12.3 31.5C8 32 5.5 30 6.2 27.4c.6-2.2 3.6-2.2 3.9-.2.2 1.5-1.4 2.4-2.6 1.6"/> <path d="M15 46v7h7v-4.5M38 48.5V53h7v-7.5" fill="#E8735A"/> <path d="M12 34c0-11 10-18 22-18 4 0 7.5.8 10.5 2.2L50 13l1.2 8.3c2.3 2.2 3.8 4.7 4.4 7.4H58c1.7 0 3 1.3 3 3v5c0 1.7-1.3 3-3 3h-3c-2.5 5.2-8.6 9.3-21 9.3S12 43 12 34z" fill="#E8735A"/> <path d="M27 21.5h9"/> <circle cx="47" cy="28.5" r="1.2" fill="#171513" stroke="none"/> <path d="M57.5 33v2.5"/></svg>';
 const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 const GAS = typeof google!=='undefined' && google.script && google.script.run;
+const APP_BUILD='25';
+// si en GitHub hay una versión más nueva que la que se está viendo, guardarla y recargar solo una vez
+if(!GAS&&location.hostname!=='localhost'){try{fetch('app.html?v='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{const m=t.match(/APP_BUILD='(\d+)'/);if(m&&m[1]!==APP_BUILD&&sessionStorage.getItem('mp_rl')!==m[1]){sessionStorage.setItem('mp_rl',m[1]);LS.set('mp_app_html',t);location.reload()}}).catch(()=>{})}catch(e){}}
 const API=location.hostname==='localhost'?'/exec':'https://script.google.com/macros/s/AKfycbyovSNcRv-IU1XPDOZdomY9p29oseEWumf8xpyekAmBYpZ4zSoBOcZtDCH9i9eJlyky/exec';
 let CFG={url:'',pin:'',sesion:LS.get('mp_sesion')||'',prueba:false};
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
