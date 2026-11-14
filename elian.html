@@ -68,7 +68,8 @@ function render(){
   $('#app').innerHTML=`<div class="brand"><span class="logo">${PIG}</span><span>Mai &amp; Elian</span></div><h1>Nuestras cuentas</h1>
    <div class="card bal"><div class="small muted">${b>0?'Le debés a Mai':b<0?'Mai te debe':'Están a mano'}</div><div class="big">${ars(Math.abs(b))}</div></div>
    <button class="btn coral" id="nuevo">+ Gasto compartido</button><button class="btn sec" id="pago">Registrar un pago entre nosotros</button>
-   ${D.metas.length?`<h2>Metas juntos</h2>${D.metas.map(m=>{const falta=Math.max(0,m.total-m.mai-m.elian),p=m.total?Math.min(100,(m.mai+m.elian)/m.total*100):0;
+   <h2>Metas juntos</h2><button class="btn sec" id="nmeta" style="margin-top:0;margin-bottom:10px">+ Nueva meta juntos</button>
+   ${D.metas.length?`${D.metas.map(m=>{const falta=Math.max(0,m.total-m.mai-m.elian),p=m.total?Math.min(100,(m.mai+m.elian)/m.total*100):0;
      return `<div class="card"><div class="row between"><b>${esc(m.nombre)}</b><span class="small muted">${m.fecha?new Date(m.fecha).toLocaleDateString('es-AR',{month:'short',year:'numeric'}):''}</span></div>
      <div class="bar"><i style="width:${p}%"></i></div><div class="kv"><span>Total</span><b>${usd(m.total)}</b></div>
      <div class="kv"><span>Puse yo</span><b>${usd(m.elian)} <span class="tiny muted">de ${usd(m.total*(1-m.parteMai))}</span></b></div>
@@ -77,33 +78,49 @@ function render(){
    <h2>Movimientos</h2><div class="card">${D.lista.length?`<div class="list">${D.lista.map(x=>`<div class="it"><span>${esc(x.que)}<span class="tiny muted"> · ${fd(x.fecha)}${x.cat==='SALDO'?'':' · pagó '+(x.pago==='Mai'?'Mai':'yo')+' · mi parte '+ars(x.total*(1-x.parteMai))}</span></span>
      <span style="text-align:right"><b>${ars(x.total)}</b>${x.cargo==='Elian'&&x.enPlanilla!=='sí'?`<br><button class="lnk tiny" data-del="${x.id}">borrar</button>`:''}</span></div>`).join('')}</div>`:'<span class="small muted">Todavía no hay nada.</span>'}</div>
    <button class="lnk" id="salir" style="margin-top:20px">Cerrar sesión</button>`;
-  $('#nuevo').onclick=()=>form();$('#pago').onclick=()=>pago();
+  $('#nuevo').onclick=()=>form();$('#pago').onclick=()=>pago();$('#nmeta').onclick=()=>meta();
   $('#salir').onclick=()=>{SES='';LS.set('me_sesion','');LS.set('me_cache','');D=null;login()};
   $$('[data-del]').forEach(el=>el.onclick=async()=>{if(!confirm('¿Borrar este gasto?'))return;try{D=await call({action:'compBorrar',id:el.dataset.del});render()}catch(e){toast(e.message)}});
   $$('[data-ap]').forEach(el=>el.onclick=async()=>{const v=prompt('¿Cuántos USD sumás?');if(!num(v))return;try{D=await call({action:'compAportar',id:el.dataset.ap,usd:num(v)});render();toast('Aporte sumado')}catch(e){toast(e.message)}});
 }
 const CATS=[['COMIDA','Comida'],['ACTIVIDADES','Salidas'],['CASA','Casa'],['VIAJES','Viajes'],['REGALOS','Regalos'],['VARIOS','Otro']];
 function chips(k,opts,val){return `<div class="chips">${opts.map(([v,l])=>`<span class="chip ${v===val?'on':''}" data-k="${k}" data-v="${v}">${l}</span>`).join('')}</div>`}
+function divPM(f){return f.div==='mai'?1:f.div==='mio'?0:f.div==='otro'?Math.min(100,Math.max(0,num(f.pct)))/100:0.5}
 function form(){
   const f={que:'',monto:'',cat:'COMIDA',pago:'Elian',div:'mitad',pct:'',fecha:hoy()};
-  const r=()=>{const pm=f.div==='otro'?Math.min(100,Math.max(0,num(f.pct)))/100:0.5,m=num(f.monto);
+  const r=()=>{const pm=divPM(f),m=num(f.monto);
     $('#app').innerHTML=`<button class="lnk" id="volver">‹ Volver</button><h1>Gasto compartido</h1>
      <label class="f">Qué fue</label><input id="q" value="${esc(f.que)}" placeholder="Ej: Merienda, Súper, Nafta">
      <label class="f">Total</label><input id="m" class="monto" inputmode="decimal" placeholder="0" value="${esc(f.monto)}">
      <label class="f">Categoría</label>${chips('cat',CATS,f.cat)}
      <label class="f">¿Quién pagó?</label>${chips('pago',[['Elian','Yo'],['Mai','Mai']],f.pago)}
-     <label class="f">¿Cómo se divide?</label>${chips('div',[['mitad','Mitad'],['otro','Otro']],f.div)}
+     <label class="f">¿Cómo se divide?</label>${chips('div',[['mitad','Mitad'],['mio','Todo mío'],['mai','Todo de Mai'],['otro','Otro %']],f.div)}
      ${f.div==='otro'?`<label class="f">Parte de Mai (%)</label><input id="pct" inputmode="decimal" value="${esc(f.pct)}" placeholder="Ej: 40">`:''}
      <label class="f">Fecha</label><input id="fe" type="date" value="${f.fecha}">
      <div class="preview ${m?'':'hide'}" id="pv"></div>
      <button class="btn" id="g">Guardar</button>`;
     const rd=()=>{f.que=$('#q').value;f.monto=$('#m').value;f.fecha=$('#fe').value;const p=$('#pct');if(p)f.pct=p.value};
     $('#volver').onclick=render;$$('[data-k]').forEach(el=>el.onclick=()=>{rd();f[el.dataset.k]=el.dataset.v;r()});
-    const pv=()=>{rd();const pm2=f.div==='otro'?Math.min(100,Math.max(0,num(f.pct)))/100:0.5,m2=num(f.monto),e=$('#pv');e.classList.toggle('hide',!m2);
+    const pv=()=>{rd();const pm2=divPM(f),m2=num(f.monto),e=$('#pv');e.classList.toggle('hide',!m2);
       e.innerHTML=f.pago==='Elian'?`Mai te debe <b>${ars(m2*pm2)}</b>`:`Le debés a Mai <b>${ars(m2*(1-pm2))}</b>`};
     $('#m').oninput=pv;const p=$('#pct');if(p)p.oninput=pv;pv();
     $('#g').onclick=async()=>{rd();if(!f.que.trim())return toast('Poné qué fue');if(!(num(f.monto)>0))return toast('Poné el monto');
-      $('#g').disabled=true;try{D=await call({action:'compCargar',que:f.que,total:num(f.monto),cat:f.cat,pago:f.pago,parteMai:f.div==='otro'?num(f.pct)/100:0.5,fecha:f.fecha});LS.set('me_cache',JSON.stringify(D));render();toast('Guardado')}catch(e){toast(e.message);$('#g').disabled=false}};};
+      $('#g').disabled=true;try{D=await call({action:'compCargar',que:f.que,total:num(f.monto),cat:f.cat,pago:f.pago,parteMai:divPM(f),fecha:f.fecha});LS.set('me_cache',JSON.stringify(D));render();toast('Guardado')}catch(e){toast(e.message);$('#g').disabled=false}};};
+  r();
+}
+function meta(){
+  const f={nombre:'',total:'',fecha:'',div:'mitad',pct:''};
+  const r=()=>{$('#app').innerHTML=`<button class="lnk" id="volver">‹ Volver</button><h1>Meta juntos</h1>
+    <label class="f">¿Qué quieren?</label><input id="n" value="${esc(f.nombre)}" placeholder="Ej: Viaje a México, Sillón">
+    <label class="f">¿Cuánto cuesta en total? (USD)</label><input id="t" class="monto" inputmode="decimal" placeholder="0" value="${esc(f.total)}">
+    <label class="f">¿Para cuándo?</label><input id="fe" type="month" value="${esc(f.fecha)}">
+    <label class="f">¿Cómo lo dividen?</label>${chips('div',[['mitad','Mitad'],['otro','Otro %']],f.div)}
+    ${f.div==='otro'?`<label class="f">Parte de Mai (%)</label><input id="pct" inputmode="decimal" value="${esc(f.pct)}" placeholder="Ej: 40">`:''}
+    <button class="btn" id="g">Crear meta</button>`;
+    const rd=()=>{f.nombre=$('#n').value;f.total=$('#t').value;f.fecha=$('#fe').value;const p=$('#pct');if(p)f.pct=p.value};
+    $('#volver').onclick=render;$$('[data-k]').forEach(el=>el.onclick=()=>{rd();f.div=el.dataset.v;r()});
+    $('#g').onclick=async()=>{rd();if(!f.nombre.trim()||!(num(f.total)>0))return toast('Completá qué es y cuánto cuesta');$('#g').disabled=true;
+      try{D=await call({action:'compMeta',nombre:f.nombre,total:num(f.total),fecha:f.fecha?f.fecha+'-01':'',parteMai:f.div==='otro'?Math.min(100,Math.max(0,num(f.pct)))/100:0.5});render();toast('Meta creada')}catch(e){toast(e.message);$('#g').disabled=false}};};
   r();
 }
 function pago(){

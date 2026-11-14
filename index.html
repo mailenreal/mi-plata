@@ -412,6 +412,7 @@ function quickParse(txt){
   if(que.length)f.que=que.join(' ').replace(/^./,c=>c.toUpperCase()); if(donde.length)f.donde=donde.join(' '); if(quien.length)f.conQuien=quien.join(' y ');
   const cat=S.frec.queCat[f.que]; if(cat)f.cat=cat;
 }
+function compPM(f){return f.compParte==='mio'?1:f.compParte==='suyo'?0:f.compParte==='otro'?Math.min(100,Math.max(0,num(f.compPct)))/100:0.5}
 function descPreview(){const f=S.f;return [f.que,f.donde,f.conQuien?'con '+f.conQuien:'',f.porQue?'por '+f.porQue:''].filter(Boolean).join(' · ')}
 function renderCarga(){
   const f=S.f,L=S.listas,pers=S.ini.config.personas;
@@ -428,10 +429,10 @@ function renderCarga(){
     <div class="preview"><span class="tiny muted">Se guarda como</span><br><b id="pv">${esc(descPreview())||'—'}</b></div>`;
   const compTxt=(mm,parteM,pago)=>mm?`A tu planilla va <b>${ars(mm*parteM)}</b> (tu parte). ${pago==='Mai'?`Elian te debe <b>${ars(mm*(1-parteM))}</b>.`:`Le debés a Elian <b>${ars(mm*parteM)}</b>.`}`:'Poné el monto total y te muestro cómo queda.';
   S.compTxt=compTxt;
-  const parteM=f.compParte==='otro'?Math.min(100,Math.max(0,num(f.compPct)))/100:0.5, mm=num(f.monto);
+  const parteM=compPM(f), mm=num(f.monto);
   const compHTML=`<label class="f">¿Compartido con Elian?</label>${chips('comp',[['no','No'],['si','Sí']],f.comp?'si':'no')}
     ${f.comp?`<label class="f">¿Quién pagó?</label>${chips('compPago',[['Mai','Yo'],['Elian','Elian']],f.compPago||'Mai')}
-      <label class="f">¿Cómo se divide?</label>${chips('compParte',[['mitad','Mitad'],['otro','Otro']],f.compParte||'mitad')}
+      <label class="f">¿Cómo se divide?</label>${chips('compParte',[['mitad','Mitad'],['mio','Todo mío'],['suyo','Todo de Elian'],['otro','Otro %']],f.compParte||'mitad')}
       ${f.compParte==='otro'?`<label class="f">Mi parte (%)</label><input id="compPct" inputmode="decimal" value="${esc(f.compPct||'')}" placeholder="Ej: 60">`:''}
       <div class="preview" id="cpv">${compTxt(mm,parteM,f.compPago||'Mai')}</div>`:''}`;
   const cuentaComp=mon=>f.comp&&(f.compPago||'Mai')==='Elian'?'':cuentaSel(mon);
@@ -491,7 +492,7 @@ function bindCarga(){
   const r=$('#rapida');if(r)r.onchange=()=>{readCarga();quickParse(r.value);renderCarga()};
   ['que','donde','porQue'].forEach(id=>{const e=$('#'+id);if(e)e.oninput=()=>{readCarga();$('#pv').textContent=descPreview()||'—'}});
   const q=$('#que');if(q)q.onchange=()=>{readCarga();if(S.frec.queCat[S.f.que]){S.f.cat=S.frec.queCat[S.f.que];renderCarga()}};
-  if(S.f.comp){['monto','compPct'].forEach(id=>{const e=$('#'+id);if(e)e.oninput=()=>{readCarga();const f=S.f,pm=f.compParte==='otro'?Math.min(100,Math.max(0,num(f.compPct)))/100:0.5,c=$('#cpv');if(c)c.innerHTML=S.compTxt(num(f.monto),pm,f.compPago||'Mai')}})}
+  if(S.f.comp){['monto','compPct'].forEach(id=>{const e=$('#'+id);if(e)e.oninput=()=>{readCarga();const f=S.f,pm=compPM(f),c=$('#cpv');if(c)c.innerHTML=S.compTxt(num(f.monto),pm,f.compPago||'Mai')}})}
   if(S.f.tipo==='cambio'){['usd','monto'].forEach(id=>{const e=$('#'+id);if(e)e.onchange=()=>{readCarga();renderCarga()}})}
   $('#save').onclick=()=>guardar(false);
 }
@@ -516,7 +517,7 @@ async function guardar(forzar){
       desc:f.tipo==='ingreso'?f.desc:(f.tipo==='pagoTarjeta'?'Pago tarjeta '+f.banco:(f.tipo==='transferencia'?'Transferencia a '+f.cuentaDestino:'')),
       que:f.tipo==='pagoTarjeta'?'Pago tarjeta':f.que});
     if(f.comp&&['variable','fijo'].includes(f.tipo)){if(f.compParte==='otro'&&!(num(f.compPct)>=0&&num(f.compPct)<=100&&String(f.compPct).trim()))throw new Error('Poné qué % te toca a vos');
-      body.comp={pago:f.compPago||'Mai',parteMai:f.compParte==='otro'?num(f.compPct)/100:0.5};if(body.comp.pago==='Elian')body.cuenta='';}
+      body.comp={pago:f.compPago||'Mai',parteMai:compPM(f)};if(body.comp.pago==='Elian')body.cuenta='';}
     delete body.compPago;delete body.compParte;delete body.compPct;
     const d=await call(body);
     if(f.cuenta)LS.set('mp_cuenta',f.cuenta);
