@@ -172,11 +172,17 @@ details.blq[data-b=ahorro] .inner .kv{border-color:rgba(244,239,231,.15)}
 .chatbtn{display:inline-flex;align-items:center;gap:6px;border:0;background:var(--card);box-shadow:var(--shadow);border-radius:999px;padding:9px 14px;font:inherit;font-weight:600;font-size:13px;color:var(--ink);cursor:pointer}
 .chatbtn svg,.qk svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .quick{display:flex;gap:8px;margin:-6px 0 16px}.qk{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:var(--card);box-shadow:var(--shadow);border-radius:20px;padding:12px 6px;font:inherit;font-size:12px;font-weight:500;color:var(--ink);cursor:pointer}
+.tile2{padding:14px 16px;margin:0}.arr.sm{width:38px;height:38px;font-size:17px}
+.cal .d small{font-size:9px;font-weight:600;opacity:.75;margin-top:1px}.cal .d b{font-weight:600}.cal .d .ic{position:absolute;top:2px;right:4px;font-size:8px;line-height:1}
+.it.pago{cursor:pointer}.it.pago .ck{width:24px;height:24px;border-radius:8px;border:2px solid var(--line);display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex:none}
+.it.pago.ok .ck{background:var(--ok);border-color:var(--ok);color:#fff}.it.pago.ok .pn{text-decoration:line-through;color:var(--muted)}
+.bolsa{padding:10px 0 14px;border-bottom:1px solid var(--line)}.bolsa:last-child{border:0;padding-bottom:2px}.bic{width:40px;height:40px;border-radius:14px;background:var(--chip);display:inline-flex;align-items:center;justify-content:center;font-size:19px;flex:none}
+.pct.ok{color:var(--ok)}.pct.warn{color:#C08A3A}.pct.bad{color:var(--bad)}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.cal .dw{font-size:11px;color:var(--muted);text-align:center}
-.cal .d{aspect-ratio:1;border-radius:14px;background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;font-weight:500;cursor:pointer;position:relative;border:2px solid transparent}
+.cal .d{aspect-ratio:1;border-radius:14px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;font-weight:500;cursor:pointer;position:relative;border:2px solid transparent}
 .cal .d.h1{background:#F2E1C8}.cal .d.h2{background:var(--coralsoft)}.cal .d.h3{background:var(--coral);color:var(--ink)}
 .cal .d.hoy{border-color:var(--ink)}.cal .d.sel{background:var(--ink);color:var(--oninv)}
-.cal .d .mk{display:flex;gap:2px;position:absolute;bottom:5px}.cal .d .mk i{width:5px;height:5px;border-radius:50%;background:var(--ink)}
+.cal .d .mk{display:none;gap:2px;position:absolute;bottom:5px}.cal .d .mk i{width:5px;height:5px;border-radius:50%;background:var(--ink)}
 .cal .d .mk i.cobro{background:var(--ok)}.cal .d .mk i.tarjeta{background:#5B6FD6}.cal .d .mk i.vence{background:var(--bad)}.cal .d .mk i.pagado{background:var(--muted)}
 .leg{display:flex;flex-wrap:wrap;gap:10px;font-size:11px;color:var(--muted);margin-top:10px}.leg i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
 .chat{display:flex;flex-direction:column;gap:8px;padding-bottom:140px}.msg{max-width:85%;padding:11px 14px;border-radius:20px;font-size:14px;line-height:1.4}
@@ -197,9 +203,9 @@ details.blq[data-b=ahorro] .inner .kv{border-color:rgba(244,239,231,.15)}
 <main id="app"><p class="muted">Cargando…</p></main>
 <nav id="nav" class="hide">
   <button data-v="inicio" class="on" aria-label="Inicio"><b><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg></b>Inicio</button>
-  <button data-v="plata" aria-label="Plata"><b><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 15h2"/></svg></b>Plata</button>
+  <button data-v="cal" aria-label="Calendario"><b><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></b>Calendario</button>
   <button data-v="cargar" class="plus" aria-label="Cargar"><b><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></b>Cargar</button>
-  <button data-v="metas" aria-label="Metas"><b><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/></svg></b>Metas</button>
+  <button data-v="bolsas" aria-label="Bolsas"><b><svg viewBox="0 0 24 24"><path d="M12 3v9h9"/><path d="M20.5 15A9 9 0 1 1 9 3.5"/></svg></b>Bolsas</button>
   <button data-v="mas" aria-label="Más"><b><svg viewBox="0 0 24 24"><circle cx="7" cy="7" r="2"/><circle cx="17" cy="7" r="2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg></b>Más</button>
 </nav>
 <div id="sync" class="sync"></div>
@@ -231,13 +237,13 @@ function rawCall(body){
     if(!r.ok)throw new Error(r.error);return r.data});
 }
 /* Rápido: lo leído se guarda en el celu y se muestra al instante; mientras, se actualiza solo */
-const RD=/^(init|inicio|mes|anual|metas|extras|plata|calendario|revision)$/;
+const RD=/^(init|inicio|mes|anual|metas|extras|plata|calendario|revision|compInicio|pinElian|avisosInfo)$/;
 const ck=b=>'mpc:'+b.action+':'+(b.mes||'');
 let enVuelo=0;function sync(p){enVuelo++;$('#sync').classList.add('on');p.finally(()=>{if(--enVuelo<=0){enVuelo=0;$('#sync').classList.remove('on')}})}
 function limpiarCache(){try{Object.keys(localStorage).filter(k=>k.startsWith('mpc:')).forEach(k=>localStorage.removeItem(k))}catch(e){}}
 function call(body){
   body=Object.assign({token:CFG.pin},body);
-  if(!RD.test(body.action)) return rawCall(body).then(d=>{limpiarCache();return d});
+  if(!RD.test(body.action)) return rawCall(body).then(d=>{S.mes=null;S.anual=null;S.M=null;S.ex=null;return d});
   const k=ck(body), c=LS.get(k);
   const net=rawCall(body).then(d=>{const j=JSON.stringify(d);if(j!==LS.get(k)){LS.set(k,j);if(c){if(body.action==='init')Object.assign(S,{listas:d.listas,frec:d.frecuentes,mesActual:d.mesActual});stale()}}return d});
   if(c){net.catch(()=>{});sync(net);try{return Promise.resolve(JSON.parse(c))}catch(e){}}
@@ -249,9 +255,10 @@ function rerender(){
   const y=window.scrollY;S.mes=null;S.anual=null;S.M=null;S.ex=null;
   const done=()=>window.scrollTo(0,y);
   if(S.view==='inicio'){const m=(S.ini&&S.ini.mes&&S.ini.mes.mes)||S.mesActual;call({action:'inicio',mes:m}).then(d=>{S.ini=d;vInicio();done()}).catch(()=>{})}
-  else if(S.view==='plata'||S.view==='metas'||S.view==='mas'){Promise.resolve(({plata:vPlata,metas:vMetas,mas:vMas})[S.view]()).then(done)}
+  else if(['plata','metas','mas','cal','rev','elian','bolsas'].includes(S.view)){Promise.resolve(({plata:vPlata,metas:vMetas,mas:vMas,cal:()=>vCalendario(S.calMes),rev:vRevision,elian:vElian,bolsas:vBolsas})[S.view]()).then(done)}
 }
-function precargar(){const m=S.mesActual;[{action:'plata',mes:m},{action:'metas'},{action:'mes',mes:m},{action:'inicio',mes:m-1},{action:'extras'}].forEach((b,i)=>setTimeout(()=>{if(!LS.get(ck(b)))rawCall(Object.assign({token:CFG.pin},b)).then(d=>LS.set(ck(b),JSON.stringify(d))).catch(()=>{})},800+i*400))}
+function precargar(){const m=S.mesActual;setTimeout(()=>[{action:'plata',mes:m},{action:'calendario',mes:m},{action:'metas'},{action:'revision',mes:m},{action:'mes',mes:m},{action:'compInicio'},{action:'extras'},{action:'inicio',mes:m-1}]
+  .forEach(b=>rawCall(Object.assign({token:CFG.pin},b)).then(d=>LS.set(ck(b),JSON.stringify(d))).catch(()=>{})),400)}
 let tT;function toast(msg,undo){const t=$('#toast');t.innerHTML='<span>'+esc(msg)+'</span>'+(undo?'<button id="undo">Deshacer</button>':'');t.classList.remove('hide');clearTimeout(tT);tT=setTimeout(()=>t.classList.add('hide'),undo?7000:3500);
   if(undo)$('#undo').onclick=async()=>{t.classList.add('hide');try{const d=await call({action:'deshacer'});toast('Deshecho: '+d.deshecho);await refreshIni();}catch(e){toast(e.message)}}}
 function modal(html){$('#sheet').innerHTML=html;$('#modal').classList.remove('hide')}
@@ -281,8 +288,9 @@ async function refreshIni(m){S.ini=await call({action:'inicio',mes:m||S.mesActua
 function saludo(){const h=new Date().getHours();return h<12?'Buen día':h<20?'Buenas tardes':'Buenas noches'}
 function go(v){
   if(v==='cargar'){openCarga();return}
+  if(['inicio','cal','bolsas','mas'].includes(v))S.home=v;
   S.view=v;$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
-  ({inicio:vInicio,metas:vMetas,mas:vMas,analisis:vAnalisis,plata:vPlata})[v]();window.scrollTo(0,0);
+  ({inicio:vInicio,metas:vMetas,mas:vMas,analisis:vAnalisis,plata:vPlata,cal:()=>vCalendario(),bolsas:vBolsas})[v]();window.scrollTo(0,0);
 }
 $$('nav button').forEach(b=>b.onclick=()=>go(b.dataset.v));
 function mesOpts(sel){return S.meses.map((m,i)=>`<option value="${i+1}" ${i+1==sel?'selected':''}>${m}</option>`).join('')}
@@ -349,7 +357,7 @@ function vInicio(){
 ` : '';
   $('#app').innerHTML=`
    <div class="brand"><span class="logo">${PIG}</span><span>Mi Plata</span><span style="flex:1"></span><button class="chatbtn" id="abrirChat"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>Chanchi</button></div>
-   ${actual?`<div class="quick"><button class="qk" id="qCal"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Calendario</button><button class="qk" id="qRev"><svg viewBox="0 0 24 24"><path d="M5 19V9M12 19V5M19 19v-7"/></svg>Revisión</button><button class="qk" id="qEl"><svg viewBox="0 0 24 24"><circle cx="9" cy="9" r="3"/><circle cx="16" cy="10" r="2.5"/><path d="M3.5 19c.8-3 3-4.5 5.5-4.5s4.7 1.5 5.5 4.5M14 15.2c2.3-.4 4.6.8 5.5 3.8"/></svg>Elian</button></div>`:''}
+   <div class="quick"><button class="qk" id="qPl"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 15h2"/></svg>Plata</button><button class="qk" id="qMe"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.5"/></svg>Metas</button><button class="qk" id="qRev"><svg viewBox="0 0 24 24"><path d="M5 19V9M12 19V5M19 19v-7"/></svg>Revisión</button><button class="qk" id="qEl"><svg viewBox="0 0 24 24"><circle cx="9" cy="9" r="3"/><circle cx="16" cy="10" r="2.5"/><path d="M3.5 19c.8-3 3-4.5 5.5-4.5s4.7 1.5 5.5 4.5M14 15.2c2.3-.4 4.6.8 5.5 3.8"/></svg>Elian</button></div>
    <div class="top"><div><div class="hola">${saludo()}, Mai</div>
        <select id="selMesI" class="msel" aria-label="Mes">${mesOpts(m.mes)}</select></div>
      <div class="row"><button class="arr" id="mPrev" aria-label="Mes anterior" ${m.mes<=1?'disabled':''}>‹</button><button class="arr" id="mNext" aria-label="Mes siguiente" ${m.mes>=12?'disabled':''}>›</button></div></div>
@@ -391,7 +399,7 @@ function vInicio(){
   const cb=$('#cerrar');if(cb)cb.onclick=()=>vAuditoria(false);
   const ip2=$('#irPlata');if(ip2)ip2.onclick=()=>go('plata');
   const ie=$('#irElian');if(ie)ie.onclick=()=>vElian();
-  $('#abrirChat').onclick=vChat;const qc=$('#qCal');if(qc){qc.onclick=()=>vCalendario(m.mes);$('#qRev').onclick=()=>vRevision();$('#qEl').onclick=()=>vElian();}
+  $('#abrirChat').onclick=vChat;$('#qPl').onclick=()=>go('plata');$('#qMe').onclick=()=>go('metas');$('#qRev').onclick=()=>vRevision();$('#qEl').onclick=()=>vElian();
   $$('[data-vp]').forEach(b=>b.onclick=()=>{const v=vAlert[b.dataset.vp];
     if(v.tipo==='tarjeta')openCarga({tipo:'pagoTarjeta',banco:v.nombre==='MP'?'MP':v.nombre,monto:v.monto?Math.round(v.monto):''});
     else openCarga({tipo:'fijo',que:v.nombre,cat:v.cat,monto:''});});
@@ -766,31 +774,70 @@ function vChat(){
 
 /* ========= CALENDARIO ========= */
 async function vCalendario(mes){
-  S.view='cal';mes=mes||S.mesActual;$$('nav button').forEach(b=>b.classList.remove('on'));
-  $('#app').innerHTML=back('Calendario')+'<div class="card muted">Cargando…</div>';
+  S.view='cal';S.home='cal';mes=mes||S.mesActual;S.calMes=mes;$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v==='cal'));
+  if(!LS.get(ck({action:'calendario',mes})))$('#app').innerHTML='<h1>Calendario</h1><div class="card muted">Cargando…</div>';
   let C;try{C=await call({action:'calendario',mes})}catch(e){return toast(e.message)}
-  const max=Math.max(1,...Object.values(C.dias_).map(d=>d.gasto)), hoy=new Date(), esHoy=d=>mes===hoy.getMonth()+1&&d===hoy.getDate();
+  if(S.view!=='cal')return;
+  const vals=Object.values(C.dias_).map(d=>d.gasto).filter(Boolean).sort((a,b)=>a-b),q=p=>vals.length?vals[Math.floor((vals.length-1)*p)]:0;
+  const hoy=new Date(),esHoy=d=>mes===hoy.getMonth()+1&&d===hoy.getDate(),corto=n=>n>=1e6?(n/1e6).toFixed(1).replace('.0','')+'M':n>=1000?Math.round(n/1000)+'k':Math.round(n);
   let cells=['D','L','M','M','J','V','S'].map(x=>`<div class="dw">${x}</div>`).join('')+'<div></div>'.repeat(C.primerDia);
-  for(let d=1;d<=C.dias;d++){const x=C.dias_[d]||{gasto:0,marcas:[]},h=x.gasto?(x.gasto/max>.66?'h3':x.gasto/max>.33?'h2':'h1'):'';
-    cells+=`<div class="d ${h} ${esHoy(d)?'hoy':''}" data-d="${d}">${d}${x.marcas.length?`<span class="mk">${x.marcas.slice(0,3).map(m=>`<i class="${m.tipo}"></i>`).join('')}</span>`:''}</div>`}
+  for(let d=1;d<=C.dias;d++){const x=C.dias_[d]||{gasto:0,marcas:[]},h=x.gasto?(x.gasto>=q(.75)?'h3':x.gasto>=q(.4)?'h2':'h1'):'';
+    const ic=[...new Set(x.marcas.map(m=>m.tipo))].map(t=>({cobro:'💵',tarjeta:'💳',vence:'•',pagado:'✓'}[t])).join('');
+    cells+=`<div class="d ${h} ${esHoy(d)?'hoy':''}" data-d="${d}">${ic?`<span class="ic">${ic}</span>`:''}<b>${d}</b>${x.gasto?`<small>${corto(x.gasto)}</small>`:''}</div>`}
+  const tot=Object.values(C.dias_).reduce((a,d)=>a+d.gasto,0),ing=Object.values(C.dias_).reduce((a,d)=>a+d.items.filter(i=>i.tipo==='ingreso'&&i.moneda!=='USD').reduce((s,i)=>s+i.monto,0),0);
   const sem=C.porDiaSemana,nom=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'],iMax=sem.indexOf(Math.max(...sem));
-  const tot=Object.values(C.dias_).reduce((a,d)=>a+d.gasto,0);
-  const venc=(S.ini.vencimientos||[]).filter(v=>v.dia).sort((a,b)=>a.dia-b.dia);
-  $('#app').innerHTML=back('Calendario')+`
-   <div class="row between" style="margin:-8px 0 12px"><button class="arr" id="cP" ${mes<=1?'disabled':''}>‹</button><b class="mid" style="font-size:22px">${C.nombre}</b><button class="arr" id="cN" ${mes>=12?'disabled':''}>›</button></div>
-   <div class="card"><div class="cal">${cells}</div>
-    <div class="leg"><span><i style="background:var(--coral)"></i>más gasto</span><span><i style="background:var(--ok)"></i>cobro</span><span><i style="background:#5B6FD6"></i>tarjeta</span><span><i style="background:var(--bad)"></i>vence</span><span><i style="background:var(--muted)"></i>pagado</span></div></div>
+  const actual=mes===S.mesActual,venc=actual?(S.ini.vencimientos||[]).filter(v=>v.dia).sort((a,b)=>a.dia-b.dia):[];
+  const prox=venc.filter(v=>!v.pagado&&v.faltan>=0)[0],pend=venc.filter(v=>!v.pagado).reduce((a,v)=>a+(v.monto||0),0),el=S.ini.elian||{balance:0};
+  const vg=(S.ini.mes&&S.ini.mes.gastosVariables)||[],sinB=actual?vg.filter(g=>!g.cat).length:0;
+  $('#app').innerHTML=`<h1 style="margin-bottom:4px">Calendario</h1><div class="small muted" style="margin:0 2px 14px">Tocá un día para ver qué gastaste</div>
+   ${actual?`<div class="grid2" style="margin-bottom:10px">
+     <div class="card tile2"><div class="tiny muted">${prox?(prox.tipo==='tarjeta'?'💳 Vence tarjeta':'📅 Próximo pago'):'📅 Pagos'}</div><div class="mid" style="font-size:20px">${prox?(prox.faltan===0?'hoy':'en '+prox.faltan+' día'+(prox.faltan===1?'':'s')):'al día'}</div><div class="tiny muted">${prox?esc(prox.nombre)+(prox.monto?' · '+ars(prox.monto):''):'nada pendiente'}</div></div>
+     <div class="card tile2" id="tEl" style="cursor:pointer"><div class="tiny muted">🤝 ${el.balance>0?'Elian te debe':el.balance<0?'Le debés a Elian':'Con Elian'}</div><div class="mid" style="font-size:20px">${el.balance?ars(Math.abs(el.balance)):'a mano'}</div><div class="tiny muted">${sinB?sinB+' gasto'+(sinB===1?'':'s')+' sin categoría':'ver detalle'}</div></div></div>`:''}
+   <div class="card">
+    <div class="row between" style="margin-bottom:12px"><button class="arr sm" id="cP" ${mes<=1?'disabled':''}>‹</button><b class="mid" style="font-size:18px">${C.nombre} ${C.anio}</b><button class="arr sm" id="cN" ${mes>=12?'disabled':''}>›</button></div>
+    <div class="cal">${cells}</div>
+    <div class="leg"><span>💵 cobro</span><span>💳 tarjeta</span><span>• vence</span><span><i style="background:var(--coral)"></i>más gasto</span></div></div>
    <div id="dia"></div>
-   <div class="grid2"><div class="card"><div class="small muted">Gastado en ${C.nombre.toLowerCase()}</div><div class="mid" style="font-size:22px">${ars(tot)}</div></div>
-     <div class="card"><div class="small muted">Día que más gastás</div><div class="mid" style="font-size:22px">${sem[iMax]?nom[iMax]:'—'}</div><div class="tiny muted">${sem[iMax]?ars(sem[iMax])+' en variables':''}</div></div></div>
-   ${mes===S.mesActual&&venc.length?`<h2>Pagos del mes</h2><div class="card list">${venc.map(v=>`<div class="it"><span>${v.pagado?'✅':'⬜'} ${esc(v.nombre)} <span class="tiny muted">· el ${v.dia}${v.debito?' · débito automático':''}</span></span><b>${v.monto?ars(v.monto):''}</b></div>`).join('')}</div>`:''}`;
+   <div class="grid2"><div class="card"><div class="tiny muted">Gastado en ${C.nombre.toLowerCase()}</div><div class="mid" style="font-size:22px">${ars(tot)}</div></div>
+     <div class="card"><div class="tiny muted">Ingresos registrados</div><div class="mid" style="font-size:22px;color:var(--ok)">${ars(ing)}</div></div></div>
+   ${sem[iMax]?`<div class="small muted" style="margin:2px 4px 10px">El día que más gastás es el <b style="color:var(--ink)">${nom[iMax]}</b> (${ars(sem[iMax])} en variables).</div>`:''}
+   ${venc.length?`<div class="row between" style="margin:24px 4px 10px"><h2 style="margin:0">Pagos del mes</h2><span class="small muted">${pend?ars(pend)+' pendiente':'todo pago ✓'}</span></div>
+    <div class="card list">${venc.map((v,i)=>`<div class="it pago ${v.pagado?'ok':''}" data-pv="${i}"><span class="row" style="gap:10px"><span class="ck">${v.pagado?'✓':''}</span><span><span class="pn">${esc(v.nombre)}</span><br><span class="tiny muted">${v.tipo==='tarjeta'?'Tarjeta':'Fijo'} · el ${v.dia}${v.debito?' · débito automático':''}</span></span></span><b class="pn">${v.monto?ars(v.monto):''}</b></div>`).join('')}</div>`:''}`;
   $('#cP').onclick=()=>vCalendario(mes-1);$('#cN').onclick=()=>vCalendario(mes+1);
+  const te=$('#tEl');if(te)te.onclick=()=>vElian();
+  $$('[data-pv]').forEach(e=>e.onclick=()=>{const v=venc[e.dataset.pv];if(v.pagado)return;
+    if(v.tipo==='tarjeta')openCarga({tipo:'pagoTarjeta',banco:v.nombre==='MP'?'MP':v.nombre,monto:v.monto?Math.round(v.monto):''});else openCarga({tipo:'fijo',que:v.nombre,cat:v.cat,monto:''})});
   const show=d=>{const x=C.dias_[d];$$('.cal .d').forEach(e=>e.classList.toggle('sel',e.dataset.d==d));
     $('#dia').innerHTML=`<div class="card"><div class="row between"><b>${d} de ${C.nombre.toLowerCase()}</b><b>${x&&x.gasto?ars(x.gasto):''}</b></div>
      ${x&&x.marcas.length?`<div class="small" style="margin-top:6px">${x.marcas.map(m=>esc(m.txt)+(m.tipo==='pagado'?' ✓':'')).join(' · ')}</div>`:''}
      ${x&&x.items.length?`<div class="list" style="margin-top:6px">${x.items.map(i=>`<div class="it"><span>${esc(i.desc)} <span class="tiny muted">· ${i.tipo==='ingreso'?'ingreso':esc(i.cat||i.tipo)}</span></span><b style="color:${i.tipo==='ingreso'?'var(--ok)':'inherit'}">${i.tipo==='ingreso'?'+':''}${i.moneda==='USD'?usd(i.monto):ars(i.monto)}</b></div>`).join('')}</div>`:'<div class="small muted" style="margin-top:6px">Sin movimientos ese día.</div>'}</div>`};
   $$('.cal .d').forEach(e=>e.onclick=()=>show(Number(e.dataset.d)));
-  if(mes===S.mesActual)show(hoy.getDate());
+  if(actual)show(hoy.getDate());
+}
+
+/* ========= BOLSAS (topes) ========= */
+const ICONO={COMIDA:'🍽',VIAJES:'✈️',REGALOS:'🎁',ROPA:'👗',LIBROS:'📚',FACULTAD:'🎓',ACTIVIDADES:'🎟',SALUD:'🩺','BELLEZA Y CUIDADO':'💅',REDES:'📱',TRAMITES:'📄',CASA:'🏠',VARIOS:'🧺',AJUSTE:'⚖️'};
+function vBolsas(){
+  S.view='bolsas';S.home='bolsas';$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v==='bolsas'));
+  const I=S.ini,m=I.mes,vg=m.gastosVariables||[],dr=diasRest(),actual=m.mes===S.mesActual;
+  const porCat={};vg.forEach(g=>{const k=String(g.cat||'').toUpperCase()||'SIN CATEGORÍA';porCat[k]=(porCat[k]||0)+(+g.monto||0)});
+  const topes=I.topes.filter(t=>t.tope),enBolsas=topes.reduce((a,t)=>a+t.tope,0),gastoBolsas=topes.reduce((a,t)=>a+t.gastado,0);
+  const est=p=>p>1?['bad','Te pasaste']:p>=.8?['warn','Cuidado']:['ok','Vas bien'];
+  const bolsa=t=>{const p=t.tope?t.gastado/t.tope:0,e=est(p);return `<div class="bolsa">
+     <div class="row" style="gap:12px"><span class="bic">${ICONO[t.cat]||'🧺'}</span><div style="flex:1"><div class="row between"><b>${esc(t.cat.charAt(0)+t.cat.slice(1).toLowerCase())}</b><b class="pct ${e[0]}">${Math.round(p*100)}%</b></div>
+     <div class="tiny muted">${ars(t.gastado)} de ${ars(t.tope)}</div></div></div>
+     <div class="bar"><i class="${e[0]}" style="width:${Math.min(100,p*100)}%"></i></div>
+     <div class="tiny ${p>1?'':'muted'}" style="${p>1?'color:var(--bad)':''}">${p>1?'Te pasaste '+ars(t.gastado-t.tope):'Te quedan '+ars(t.tope-t.gastado)+(actual?' · '+ars((t.tope-t.gastado)/dr)+' por día':'')}</div></div>`};
+  const sinTope=Object.keys(porCat).filter(k=>!topes.some(t=>t.cat===k)).sort((a,b)=>porCat[b]-porCat[a]);
+  const vp=v=>v.destinado?v.gastado/v.destinado:0,ev=est(vp(m.variables));
+  $('#app').innerHTML=`<div class="row between"><div><h1 style="margin-bottom:4px">Bolsas</h1><div class="small muted" style="margin:0 2px 14px">${m.nombre.toLowerCase()} · ${actual?dr+' días para fin de mes':'mes cerrado'}</div></div><button class="btn sm" id="edTop" style="width:auto;margin:0 0 14px">Editar montos</button></div>
+   <div class="card" style="background:linear-gradient(135deg,var(--coralsoft),var(--chip))"><div class="tiny muted">Variables del mes</div>
+     <div class="big">${ars(m.variables.destinado)}</div><div class="small muted">Gastado: ${ars(m.variables.gastado)} (${Math.round(vp(m.variables)*100)}%)</div>
+     <div class="row" style="gap:6px;margin-top:10px;flex-wrap:wrap"><span class="pill ${ev[0]}">${ev[1]}</span><span class="pill n">Disponible: ${ars(Math.max(0,m.variables.destinado-m.variables.gastado))}</span><span class="pill n">En bolsas: ${ars(gastoBolsas)} de ${ars(enBolsas)}</span></div></div>
+   <h2>Con tope</h2><div class="card">${topes.length?topes.map(bolsa).join(''):'<span class="small muted">Todavía no tenés topes. Tocá "Editar montos".</span>'}</div>
+   ${sinTope.length?`<h2>Sin tope</h2><div class="card list">${sinTope.map(k=>`<div class="it"><span>${ICONO[k]||'🧺'}  ${esc(k.charAt(0)+k.slice(1).toLowerCase())}</span><b>${ars(porCat[k])}</b></div>`).join('')}</div>`:''}
+   <div class="leg" style="margin:4px 4px 0"><span>🟢 vas bien</span><span>🟠 cuidado (80%)</span><span>🔴 te pasaste</span></div>`;
+  $('#edTop').onclick=()=>{S.home='bolsas';vAjustes()};
 }
 
 /* ========= REVISIÓN ========= */
@@ -939,14 +986,14 @@ async function vVenc(){
 
 /* ========= MÁS ========= */
 function vMas(){
-  const items=[['chat','💬','Chanchi · preguntale a tu plata'],['cal','🗓','Calendario del mes'],['rev','📈','Revisión quincenal'],['avisos','🔔','Avisos al celu'],['elian','🤝','Gastos y metas con Elian'],['analisis','📊','Análisis del año'],['venc','📅','Vencimientos de gastos fijos'],['tarjetas','💳','Tarjetas y cuotas'],['usdw','💵','Billeteras USD'],['inv','📈','Inversiones'],['subs','🔁','Suscripciones'],['auds','🧮','Auditorías'],['ajustes','⚙️','Topes, cuentas y personas']];
+  const items=[['plata','💰','¿Dónde está la plata?'],['metas','🎯','Metas'],['chat','💬','Chanchi · preguntale a tu plata'],['rev','📈','Revisión quincenal'],['avisos','🔔','Avisos al celu'],['elian','🤝','Gastos y metas con Elian'],['analisis','📊','Análisis del año'],['venc','📅','Vencimientos de gastos fijos'],['tarjetas','💳','Tarjetas y cuotas'],['usdw','💵','Billeteras USD'],['inv','📈','Inversiones'],['subs','🔁','Suscripciones'],['auds','🧮','Auditorías'],['ajustes','⚙️','Topes, cuentas y personas']];
   $('#app').innerHTML=`<h1>Más</h1><div class="card list menu">${items.map(i=>`<div class="it" data-m="${i[0]}"><span>${i[1]}  ${i[2]}</span><span class="muted">›</span></div>`).join('')}</div>
     <button class="btn sec" id="salir">Cerrar sesión</button>`;
-  $$('[data-m]').forEach(e=>e.onclick=()=>({chat:vChat,cal:()=>vCalendario(),rev:()=>vRevision(),avisos:vAvisos,elian:vElian,analisis:vAnalisis,venc:vVenc,tarjetas:vTarjetas,usdw:vUSD,inv:vInv,subs:vSubs,auds:vAuds,ajustes:vAjustes})[e.dataset.m]());
+  $$('[data-m]').forEach(e=>e.onclick=()=>({plata:()=>go('plata'),metas:()=>go('metas'),chat:vChat,rev:()=>vRevision(),avisos:vAvisos,elian:vElian,analisis:vAnalisis,venc:vVenc,tarjetas:vTarjetas,usdw:vUSD,inv:vInv,subs:vSubs,auds:vAuds,ajustes:vAjustes})[e.dataset.m]());
   $('#salir').onclick=()=>{LS.set('mp_sesion','');CFG.sesion='';limpiarCache();vSetup()};
 }
 async function ensureEx(){if(!S.ex)S.ex=await call({action:'extras'});return S.ex}
-const back=t=>`<div class="row" style="gap:10px"><button class="lnk" onclick="go('mas')">‹ Más</button></div><h1>${t}</h1>`;
+const back=t=>`<div class="row" style="gap:10px"><button class="lnk" onclick="go(S.home||'mas')">‹ Volver</button></div><h1>${t}</h1>`;
 async function vTarjetas(){const X=await ensureEx();
   $('#app').innerHTML=back('Tarjetas y cuotas')+`<h2>Próximos meses</h2>${X.tarjetas.proximas.map(p=>`<div class="card"><div class="row between"><b>${p.mes}</b><b>${ars(p.total)}</b></div>${p.porBanco.filter(b=>b.monto).map(b=>`<div class="kv"><span>${esc(b.banco)}</span><span>${ars(b.monto)}</span></div>`).join('')}</div>`).join('')}
    <h2>Compras en cuotas pendientes</h2><div class="card list">${X.tarjetas.compras.map(c=>`<div class="it"><span>${esc(c.item)}<br><span class="small muted">${esc(c.banco)} · ${c.cuotas} cuotas · mes ${c.inicio} a ${c.fin}</span></span><b>${ars(c.cuota)}/mes</b></div>`).join('')||'<span class="muted small">Nada pendiente</span>'}</div>`}
