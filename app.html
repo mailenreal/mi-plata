@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#EEE8DD">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -194,6 +194,11 @@ details.blq[data-b=ahorro] .inner .kv{border-color:rgba(244,239,231,.15)}
 .logo{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:15px;background:var(--coralsoft)}
 .logo .pig{width:32px;height:32px}
 .big-logo{width:88px;height:88px;border-radius:28px;margin:30px 0 4px}.big-logo .pig{width:64px;height:64px}
+.grid2{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.grid3{grid-template-columns:repeat(3,minmax(0,1fr))}
+html,body{overflow-x:hidden;max-width:100%}main{overflow-x:hidden}
+input,select,textarea{font-size:16px!important}input.monto{font-size:44px!important}
+.big{font-size:clamp(22px,7.5vw,34px)}.grid2 .big{font-size:clamp(18px,5.4vw,28px);white-space:nowrap}
+.kv{flex-wrap:wrap}.kv b{text-align:right}
 .sync{position:fixed;top:10px;right:12px;width:8px;height:8px;border-radius:50%;background:var(--acc);opacity:0;transition:opacity .2s;z-index:40}
 .sync.on{opacity:1;animation:pul 1s infinite alternate}@keyframes pul{to{opacity:.3}}
 </style>
@@ -222,7 +227,7 @@ let CFG={url:'',pin:'',sesion:LS.get('mp_sesion')||'',prueba:false};
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const ars=n=>{const v=Math.round(Number(n)||0);return(v<0?'-':'')+'$'+Math.abs(v).toLocaleString('es-AR')};
-const usd=n=>{const v=Math.round((Number(n)||0)*10)/10;return(v<0?'-':'')+'US$'+Math.abs(v).toLocaleString('es-AR')};
+const usd=n=>{const x=Number(n)||0,v=Math.abs(x)>=100?Math.round(x):Math.round(x*10)/10;return(v<0?'-':'')+'US$'+Math.abs(v).toLocaleString('es-AR')};
 const money=(n,m)=>m==='ARS'?ars(n):(m==='USDT'?usd(n).replace('US$','')+' USDT':usd(n));
 const pc=n=>Math.round((n||0)*100)+'%';
 const hoyISO=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
@@ -650,7 +655,7 @@ function evaluar(g,M,capOverride){
   const r=cap>0?req/cap:Infinity, alt=cap>0?Math.ceil(falta/(cap*0.7)):null;
   if(r<=0.7)return{v:'realista',t:'Realista',req,falta,meses,txt:`Necesitás ahorrar ${usd(req)} por mes durante ${meses} meses. Es el ${pc(r)} de lo que ahorrás en promedio (${usd(cap)}/mes): llegás cómoda.`};
   if(r<=1)return{v:'optimista',t:'Optimista',req,falta,meses,txt:`Necesitás ${usd(req)} por mes: el ${pc(r)} de lo que ahorrás hoy (${usd(cap)}/mes). Se puede, pero ahorrando casi todo. Tendrías que bajar variables unos ${ars((req-cap*0.7)*M.dolar)} por mes para tener margen. Más cómodo: en ${alt} meses.`};
-  return{v:'sonador',t:'Soñador',req,falta,meses,txt:cap>0?`Necesitarías ${usd(req)} por mes y hoy ahorrás ${usd(cap)} en promedio: ${r>2?'más del doble':'más'} de lo que podés. <b>Propuesta:</b> en <b>${alt} meses</b> ahorrando ${usd(cap*0.7)} por mes, o bajar el monto/respaldo a ${usd(cap*0.7*meses+Number(g.asignado||0))}.`:'Hoy tu ahorro promedio está en cero o negativo, así que no hay ritmo para llegar. Primero hay que liberar plata cada mes (bajar variables o sumar ingresos).'};
+  return{v:'sonador',t:'Soñador',req,falta,meses,txt:cap>0?`Necesitarías ${usd(req)} por mes y hoy ahorrás ${usd(cap)} en promedio: ${r>2?'más del doble':'más'} de lo que podés. <b>Propuesta:</b> en <b>${alt} meses</b> ahorrando ${usd(cap*0.7)} por mes, o bajar el monto a ${usd(cap*0.7*meses+Number(g.asignado||0))}.`:'Hoy tu ahorro promedio está en cero o negativo, así que no hay ritmo para llegar. Primero hay que liberar plata cada mes (bajar variables o sumar ingresos).'};
 }
 async function vMetas(){
   $('#app').innerHTML='<h1>Metas</h1><div class="card muted">Cargando…</div>';
@@ -690,15 +695,15 @@ function wizard(g){
     <label class="f">¿Es con Elian?</label>${chips('con',[['no','Solo yo'],['si','Con Elian']],st.con)}
     ${st.con==='si'?`<label class="f">¿Cuánto ponés vos?</label>${chips('parte',[['mitad','Mitad'],['otro','Otro %']],st.parte)}${st.parte==='otro'?`<input id="wp" inputmode="decimal" value="${esc(st.pct)}" placeholder="Mi % (ej: 60)">`:''}
       <p class="small muted">Poné el costo TOTAL del viaje o la meta. Tus cuentas usan solo tu parte, y Elian ve el total y lo que pone cada uno.</p>`:''}
-    <label class="f">3 · ¿Cuánto ${st.con==='si'?'cuesta en total':'querés gastar'}?</label><div class="row"><input id="wm" inputmode="decimal" value="${esc(st.monto)}" placeholder="0">${chips('moneda',['USD','ARS'],st.moneda)}</div>
-    <label class="f">4 · ¿Con cuánto querés quedarte de respaldo? <span class="muted">(aparte de la emergencia)</span></label><input id="wr" inputmode="decimal" value="${esc(st.respaldo)}" placeholder="0">
-    <label class="f">5 · ¿Usás algo de lo que ya tenés ahorrado? <span class="muted">(libre: ${usd(M.disponible+Number(g?g.asignado:0))})</span></label><input id="wa" inputmode="decimal" value="${esc(st.asignado||'')}" placeholder="0 USD">
+    <label class="f">3 · ¿Cuánto ${st.con==='si'?'cuesta en total':'cuesta'}?</label><div class="row"><input id="wm" inputmode="decimal" value="${esc(st.monto)}" placeholder="0">${chips('moneda',['USD','ARS'],st.moneda)}</div>
+    <label class="f">4 · ¿Cuánto tenés ya juntado para esto?</label><input id="wa" inputmode="decimal" value="${esc(st.asignado||'')}" placeholder="0 USD">
+    <div class="tiny muted" style="margin-top:6px">De tus ahorros te quedan <b>${usd(M.disponible+Number(g?g.asignado:0))}</b> libres (sin contar la emergencia). Si no separaste nada, dejalo en 0.</div>
     <label class="f">Prioridad</label>${chips('prioridad',M?S.listas.prioridades:['ALTA','MEDIA','BAJA'],st.prioridad)}
     <button class="btn" id="wev">Ver si es realista</button><div id="wres"></div>`);
     $('#x').onclick=closeModal;
     $$('#sheet [data-k]').forEach(el=>el.onclick=()=>{read();st[el.dataset.k]=el.dataset.v;render()});
     $('#wev').onclick=()=>{read();res()};};
-  const read=()=>{st.nombre=$('#wn').value;st.fecha=$('#wf').value;st.monto=$('#wm').value;st.respaldo=$('#wr').value;st.asignado=num($('#wa').value);const wp=$('#wp');if(wp)st.pct=wp.value};
+  const read=()=>{st.nombre=$('#wn').value;st.fecha=$('#wf').value;st.monto=$('#wm').value;st.asignado=num($('#wa').value);const wp=$('#wp');if(wp)st.pct=wp.value};
   const toUSD=v=>st.moneda==='ARS'?num(v)/M.dolar:num(v);
   const res=()=>{
     if(!st.nombre||!num(st.monto))return toast('Completá qué es y cuánto');
